@@ -1,10 +1,8 @@
-import React, { PureComponent } from "react";
-import PropTypes from "prop-types";
-import { LazyBrush } from "lazy-brush";
 import { Catenary } from "catenary-curve";
-
+import { LazyBrush } from "lazy-brush";
+import PropTypes from "prop-types";
+import React, { PureComponent } from "react";
 import ResizeObserver from "resize-observer-polyfill";
-
 import CoordinateSystem, { IDENTITY } from "./coordinateSystem";
 import drawImage from "./drawImage";
 import { DefaultState } from "./interactionStateMachine";
@@ -224,7 +222,7 @@ export default class CanvasDraw extends PureComponent {
     return imageData;
   };
 
-  loadSaveData = (saveData, immediate = this.props.immediateLoading) => {
+  loadSaveData = (saveData, immediate = this.props.immediateLoading, triggerChange = true, ) => {
     if (typeof saveData !== "string") {
       throw new Error("saveData needs to be of type string!");
     }
@@ -244,6 +242,7 @@ export default class CanvasDraw extends PureComponent {
       this.simulateDrawingLines({
         lines,
         immediate,
+        triggerChange
       });
     } else {
       // we need to rescale the lines based on saved & current dimensions
@@ -486,7 +485,7 @@ export default class CanvasDraw extends PureComponent {
       drawImage({ ctx: this.ctx.grid, img: this.image });
   };
 
-  simulateDrawingLines = ({ lines, immediate }) => {
+  simulateDrawingLines = ({ lines, immediate, triggerChange = true }) => {
     // Simulate live-drawing of the loaded lines
     // TODO use a generator
     let curTime = 0;
@@ -526,7 +525,7 @@ export default class CanvasDraw extends PureComponent {
       window.setTimeout(() => {
         // Save this line with its props instead of this.props
         this.points = points;
-        this.saveLine({ brushColor, brushRadius });
+        this.saveLine({ brushColor, brushRadius, triggerChange });
       }, curTime);
     });
   };
@@ -567,7 +566,7 @@ export default class CanvasDraw extends PureComponent {
     this.ctx.temp.stroke();
   };
 
-  saveLine = ({ brushColor, brushRadius } = {}) => {
+  saveLine = ({ brushColor, brushRadius, triggerChange = true } = {}) => {
     if (this.points.length < 2) return;
 
     // Save as new line
@@ -594,7 +593,9 @@ export default class CanvasDraw extends PureComponent {
     // Clear the temporary line-drawing canvas
     this.clearWindow(this.ctx.temp);
 
-    this.triggerOnChange();
+    if (triggerChange) {
+      this.triggerOnChange();
+    }
   };
 
   triggerOnChange = () => {

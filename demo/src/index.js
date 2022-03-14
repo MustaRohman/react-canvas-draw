@@ -4,6 +4,9 @@ import { render } from "react-dom";
 import CanvasDraw from "../../src";
 import classNames from "./index.css";
 
+const testData = `{"lines":[{"points":[{"x":191.66020772611319,"y":313.07502802255567},{"x":191.66020772611319,"y":313.07502802255567},
+{"x":191.66020772611319,"y":313.07502802255567}],"brushColor":"#444","brushRadius":10},{"points":[{"x":324.18329644779396,"y":302.85962295268104},{"x":324.18329644779396,"y":302.85962295268104},{"x":324.18329644779396,"y":302.85962295268104}],"brushColor":"#444","brushRadius":10}],"width":400,"height":400}`;
+
 class Demo extends Component {
   state = {
     color: "#ffc600",
@@ -15,8 +18,11 @@ class Demo extends Component {
     imgs: [
       "https://upload.wikimedia.org/wikipedia/commons/a/a1/Nepalese_Mhapuja_Mandala.jpg",
       "https://i.imgur.com/a0CGGVC.jpg"
-    ]
+    ],
+    canvasRef: null
   };
+
+  canvasRaw = null;
 
   componentDidMount() {
     // let's change the color randomly every 2 seconds. fun!
@@ -66,7 +72,15 @@ class Demo extends Component {
           default values.
         </p>
         <p>Try it out! Draw on this white canvas:</p>
-        <CanvasDraw onChange={() => console.log("onChange")} />
+        <button onClick={() => {
+          console.log("canvasRef", this.canvasRef)
+          this.canvasRef.loadSaveData(testData, false, false)
+        }}>Load Data (SHOULD NOT trigger onChange)</button>
+        <button onClick={() => {
+          console.log("canvasRef", this.canvasRef)
+          this.canvasRef.loadSaveData(testData, false)
+        }}>Load Data (SHOULD trigger onChange)</button>
+        <CanvasDraw onChange={() => console.log("onChange")} ref={ref => this.canvasRef = ref} />
         <h2>Custom Brush-Color</h2>
         <p>
           Let's spice things up by using custom brush colors{" "}
@@ -125,7 +139,7 @@ class Demo extends Component {
           This part got me most excited. Very easy to use saving and loading of
           drawings. It even comes with a customizable loading speed to control
           whether your drawing should load instantly (loadTimeOffset = 0) or
-          appear after some time (loadTimeOffset > 0){" "}
+          appear after some time (loadTimeOffset &gt; 0){" "}
           <span>{`<CanvasDraw loadTimeOffset={10} />`}</span>
         </p>
         <p>Try it out! Draw something, hit "Save" and then "Load".</p>
